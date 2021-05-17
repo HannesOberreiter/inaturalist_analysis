@@ -91,10 +91,10 @@ df_total <- df %>%
 df_TextAt <- tribble(
     ~time, ~timeend, ~title, ~text, ~y, ~yend,
     "2009-01-01", "2009-03-01", "2008-12-31", "Mehr als 800 Beobachtungen<br/>für Österreich auf iNaturalist.", 850, 70000,
-    "2013-01-01", "2012-06-01", "2012-12-31", "Vier Jahre später waren es bereits <br/>über 5.500 Beobachtungen.", 5500, 70000,
-    "2015-01-01", "2015-06-01", "2014-12-31", "Nur mehr zwei Jahre später wurde <br/>die 10.000er Marke überschritten.", 10000, 110000,
+    "2013-01-01", "2012-06-01", "2012-12-31", "Vier Jahre später sind es bereits <br/>über 5.500 Beobachtungen.", 5500, 70000,
+    "2015-01-01", "2015-06-01", "2014-12-31", "Nur mehr zwei Jahre später ist <br/>die 10.000er Marke überschritten.", 10000, 110000,
     "2020-01-01", "2018-01-01", "2019-12-31", "Über 100.000 eingetragene Beobachtungen!", 103633, 180000,
-    "2021-05-01", "2019-05-01", "2021-05-01", "Aktuell sind es über in Summe <br/> über 300.000 Beobachtungen.", 319095, 250000
+    "2021-05-01", "2019-05-01", "2021-05-01", "Aktuell sind in Österreich die Daten von über<br/> 300.000 Beobachtungen frei Zugänglich!", 319095, 270000
 ) %>%
     mutate(
         time = as.Date(time),
@@ -104,7 +104,7 @@ df_TextAt <- tribble(
 
 p <- df %>%
     filter(place == "Österreich") %>%
-    ggplot(aes(x = time, y = csum, group = taxon)) +
+    ggplot() +
     geom_rect(
         data = df_rect,
         aes(
@@ -114,8 +114,7 @@ p <- df %>%
             ymax = ymax,
             fill = alpha,
         ),
-        alpha = 0.2,
-        inherit.aes = FALSE
+        alpha = 0.2
     ) +
     geom_richtext(
         data = df_rect,
@@ -128,11 +127,10 @@ p <- df %>%
         fill = NA,
         fontface = "bold",
         size = 5,
-        alpha = 0.5,
-        inherit.aes = FALSE
+        alpha = 0.5
     ) +
     geom_area(
-        aes(fill = color)
+        aes(x = time, y = csum, group = taxon, fill = color)
     ) +
     geom_line(
         data = df_total %>%
@@ -141,7 +139,6 @@ p <- df %>%
         aes(x = time, y = total, group = "A"),
         size = 2,
         color = "#999999",
-        inherit.aes = FALSE,
         lineend = "round"
     ) +
     geom_line(
@@ -149,7 +146,6 @@ p <- df %>%
             filter(place == "Österreich"),
         aes(x = time, y = total, group = "A"),
         color = "black",
-        inherit.aes = FALSE,
         lineend = "round"
     ) +
     annotate(
@@ -167,11 +163,9 @@ p <- df %>%
             x = timeend,
             y = yend,
             label = glue::glue("<b>{title}</b>:<br/> {text}"),
-            nudge_y = c(1, 1, 1, 1, 0),
             hjust = c(0, 0, 0, 1, 1),
             vjust = 0.9
         ),
-        inherit.aes = FALSE,
         size = 5
     ) +
     geom_richtext(
@@ -183,38 +177,28 @@ p <- df %>%
                 "<b style='font-size:20pt;'>{taxon}</b><br>{format(csum, big.mark  = '.', decimal.mark = ',', width = 7, justify = 'right')}"
             ),
             color = color,
-            nudge_x = 1,
             hjust = 0,
             vjust = 0.9
         ),
-        inherit.aes = FALSE,
         position = "stack",
         size = 5,
         label.colour = NA,
         fill = NA
     ) +
-    coord_cartesian(clip = "off") +
-    scale_x_date(
-        date_breaks = "1 month",
-        date_labels = " ",
-        expand = c(0, 0),
-    ) +
     geom_richtext(
-        data = df_total %>% filter(place == "Steiermark" & time == last(time)),
+        data = df_total %>%
+            filter(place == "Steiermark" & time == last(time)),
         aes(
             time,
             total,
             group = 1,
             label = glue::glue(
-                "<b style='font-size:15pt;'>Steiermark</b><br>{format(total, big.mark  = '.', decimal.mark = ',', trim = FALSE)}",
-                .trim = FALSE
+                "<b style='font-size:15pt;'>Steiermark</b><br>{format(total, big.mark  = '.', decimal.mark = ',')}",
             ),
             color = "#999999",
-            nudge_x = 1,
             hjust = 0,
             vjust = 0.9
         ),
-        inherit.aes = FALSE,
         position = "stack",
         size = 5,
         label.colour = NA,
@@ -230,9 +214,14 @@ p <- df %>%
         limits = c(0, 3.5 * 10^5),
         expand = c(0, 0)
     ) +
+    scale_x_date(
+        date_breaks = "1 month",
+        date_labels = " ",
+        expand = c(0, 0),
+    ) +
     scale_fill_identity() +
     scale_color_identity() +
-    scale_alpha(range = c(.1, 1)) +
+    coord_cartesian(clip = "off") +
     labs(
         title = "iNaturalist - Österreich",
         subtitle = "Eingetragene Beobachtungen",
@@ -243,7 +232,6 @@ p <- df %>%
     theme(
         panel.grid.major.y = element_line(color = "black"),
         panel.background = element_rect(fill = "#56b3e969"),
-        axis.text.x = element_text(color = "grey60", margin = margin(t = 4)),
         axis.ticks.x = element_line(color = "grey60"),
         axis.ticks.length.x = unit(.4, "lines"),
         axis.line.x = element_blank(),
