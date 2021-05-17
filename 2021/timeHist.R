@@ -5,7 +5,7 @@ library(glue)
 library(scales)
 library(ggtext)
 library(cowplot)
-library(ggforce)
+# library(ggforce)
 library(jsonlite)
 library(lubridate)
 
@@ -76,6 +76,7 @@ df_rect <- df %>%
         ymax = Inf
     ) %>%
     mutate(
+        xmax = if_else(xmax == last(xmax), xmax, xmax + 30),
         alpha = ifelse(year %% 2 == 0, NA, "#56B4E9")
     )
 
@@ -94,7 +95,7 @@ df_TextAt <- tribble(
     "2013-01-01", "2012-06-01", "2012-12-31", "Vier Jahre später sind es bereits <br/>über 5.500 Beobachtungen.", 5500, 70000,
     "2015-01-01", "2015-06-01", "2014-12-31", "Nur mehr zwei Jahre später ist <br/>die 10.000er Marke überschritten.", 10000, 110000,
     "2020-01-01", "2018-01-01", "2019-12-31", "Über 100.000 eingetragene Beobachtungen!", 103633, 180000,
-    "2021-05-01", "2019-05-01", "2021-05-01", "Aktuell sind in Österreich die Daten von über<br/> 300.000 Beobachtungen frei Zugänglich!", 319095, 270000
+    "2021-05-01", "2019-05-01", "2021-05-01", "Aktuell sind in Österreich die Daten von über<br/><b>300.000</b> Beobachtungen Online und frei Zugänglich!", 319095, 270000
 ) %>%
     mutate(
         time = as.Date(time),
@@ -225,7 +226,7 @@ p <- df %>%
     labs(
         title = "iNaturalist - Österreich",
         subtitle = "Eingetragene Beobachtungen",
-        caption = "(c) Hannes Oberreiter  ||  API iNaturalist.org - Stand: 15.05.2021",
+        caption = "API iNaturalist.org - Stand: 15.05.2021",
         y = "", x = ""
     ) +
     theme_minimal_hgrid() +
@@ -237,7 +238,7 @@ p <- df %>%
         axis.line.x = element_blank(),
         legend.position = "none",
         plot.margin = margin(35, 100, 5, 5),
-        plot.caption = element_text(margin = margin(t = -10)),
+        plot.caption = element_text(color = "grey60", margin = margin(t = -25)),
         axis.text.y = element_text(size = 15, hjust = 0, vjust = -0.5, color = "#000000", margin = margin(r = -60)),
         axis.ticks.y = element_blank()
     )
